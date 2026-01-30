@@ -353,37 +353,63 @@
   (function showInitialTemplate(){ const lang = languageSelect.value; aiText.textContent = 'Welcome to ' + lang.toUpperCase() + '!\n\nTemplate:\n\n' + (templates[lang] || ''); })();
 
   // Run: simulate analysis and log bottom input value to the console
-  runBtn.addEventListener('click', () => {
-    const code = codeArea.value;
-    const language = languageSelect.value;
-    const userInput = userInputField.value; // value from bottom input field
+ 
+runBtn.addEventListener("click", async () => {
+  const code = codeArea.value;
+  const language = languageSelect.value;
 
-    // Log the user input to the browser console as requested
-    console.log('User input (from input-area):', userInput);
+  outputText.className = "";
+  outputText.textContent = "Running...";
+  aiText.textContent = "Analyzing code... 🤖";
 
-    // Also show the input in the Output panel for convenience
-    outputText.classList.remove('error', 'success');
-    aiText.textContent = 'Analyzing ' + language.toUpperCase() + ' code... 🤖';
+  try {
+    const res = await fetch("http://127.0.0.1:8000/run", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        language: language,
+        code: code
+      })
+    });
 
-    setTimeout(() => {
-      if (language === 'python' && code.includes('pritn')) {
-        outputText.textContent = "Error: 'pritn' is not defined. Did you mean 'print'?"; outputText.classList.add('error'); aiText.textContent = "💡 Suggestion: Fix typo 'pritn' → 'print'";
-      } else if (language === 'cpp' && code.includes('cout <<')) {
-        outputText.textContent = 'Output: Hello, World!\n✅ C++ code compiled successfully.'; outputText.classList.add('success'); aiText.textContent = '✨ Suggestion: Use std::endl for cleaner output formatting.';
-      } else if (language === 'java' && code.includes('System.out.println')) {
-        outputText.textContent = 'Output: Hello, World!\n✅ Java compilation successful.'; outputText.classList.add('success'); aiText.textContent = '✅ No syntax issues detected.';
-      } else if (language === 'javascript' && code.includes('console.log')) {
-        outputText.textContent = 'Output: Hello, World!\n✅ JS executed successfully.'; outputText.classList.add('success'); aiText.textContent = '💡 Tip: You can use template literals for cleaner strings.';
-      } else {
-        outputText.textContent = '✅ Compilation completed successfully!'; outputText.classList.add('success'); aiText.textContent = 'AI Scan: No major issues found.';
-      }
+    const data = await res.json();
 
-      // Append the user input into the output area for reference (non-destructive)
-      if (userInput && userInput.trim() !== '') {
-        outputText.textContent += '\n\n[Provided Input]: ' + userInput;
-      }
-    }, 700);
-  });
+    if (data.success) {
+      outputText.classList.add("success");
+      outputText.textContent = data.output || "Program executed successfully";
+      aiText.textContent = "✅ No issues found.";
+    } else {
+      outputText.classList.add("error");
+
+      let errorMsg = `❌ ${data.error_type}\n`;
+      if (data.line) errorMsg += `Line: ${data.line}\n`;
+      errorMsg += `Message: ${data.message}`;
+
+      outputText.textContent = errorMsg;
+
+      aiText.textContent =
+        "💡 Suggested fix:\n" +
+        explainError(data);
+    }
+
+  } catch (err) {
+    outputText.classList.add("error");
+    outputText.textContent = "Backend connection failed.";
+    aiText.textContent = err.toString();
+  }
+});
+
+function explainError(err) {
+  if (err.language === "python" && err.error_type === "NameError") {
+    return "You are using a variable before defining it.";
+  }
+  if (err.error_type === "CompilationError") {
+    return "Check syntax near the reported line number.";
+  }
+  return "Review the error message and correct the code.";
+}
 
   // Make the bottom input-area Run button behave the same as the top Run button
   inputRunBtn.addEventListener('click', () => runBtn.click());

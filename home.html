@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Code Guardian</title>
+<style>
+  body {
+    margin: 0;
+    font-family: "Segoe UI", sans-serif;
+    background-color: #1e1e1e;
+    color: #ddd;
+  }
+  .navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #2b2b2b;
+    padding: 8px 16px;
+  }
+  .navbar button, select {
+    background: none;
+    color: #ddd;
+    border: none;
+    margin: 0 6px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .navbar button:hover, select:hover {
+    color: #fff;
+  }
+  select {
+    background-color: #333;
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+  .main {
+    display: flex;
+    height: calc(100vh - 50px);
+  }
+  .sidebar {
+    width: 200px;
+    background-color: #252526;
+    padding: 10px;
+  }
+  .sidebar h3 {
+    color: #bbb;
+    font-size: 14px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 5px;
+  }
+  .sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .sidebar li {
+    margin: 6px 0;
+    color: #999;
+    cursor: pointer;
+  }
+  .sidebar li:hover {
+    color: #fff;
+  }
+  .editor {
+    flex: 1;
+    background-color: #1e1e1e;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #333;
+    border-right: 1px solid #333;
+  }
+  .editor textarea {
+    flex: 1;
+    background-color: #1e1e1e;
+    color: #dcdcdc;
+    border: none;
+    padding: 16px;
+    font-family: monospace;
+    font-size: 15px;
+    outline: none;
+    resize: none;
+  }
+  .output-section {
+    display: flex;
+    background-color: #2a2a2a;
+    border-top: 1px solid #333;
+  }
+  .panel {
+    flex: 1;
+    padding: 12px;
+    border-right: 1px solid #333;
+  }
+  .panel:last-child {
+    border-right: none;
+  }
+  .error {
+    color: #ff6666;
+    white-space: pre-wrap;
+  }
+  .success {
+    color: #80ff80;
+  }
+  .console {
+    background-color: #111;
+    padding: 10px;
+    border-top: 1px solid #333;
+    font-family: monospace;
+  }
+  .input-area {
+    display: flex;
+    background-color: #222;
+    padding: 8px;
+  }
+  .input-area input {
+    flex: 1;
+    background-color: #333;
+    border: none;
+    padding: 6px;
+    color: #fff;
+    outline: none;
+  }
+  .input-area button {
+    background-color: #4caf50;
+    border: none;
+    color: white;
+    padding: 6px 12px;
+    margin-left: 6px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  .input-area button:hover {
+    background-color: #66bb6a;
+  }
+</style>
+</head>
+<body>
+
+<div class="navbar">
+<div class="logo">
+  <strong>C|G</strong>
+</div>
+
+
+  <div>
+    <button id="newFileBtn">New File</button>
+    <button id="openFileBtn">Open File</button>
+  <button id="saveFileBtn">Save</button>
+
+    <!-- Language Selector -->
+    <select id="languageSelect">
+      <option value="python">Python</option>
+      <option value="cpp">C++</option>
+      <option value="java">Java</option>
+      <option value="javascript">JavaScript</option>
+      <option value="c">C</option>
+    </select>
+  </div>
+  <button id="runBtn" style="background:#4caf50;padding:6px 12px;border-radius:4px;">Run</button>
+</div>
+
+<div class="main">
+  <div class="sidebar">
+    <h3>Explorer</h3>
+    <ul id="fileList">
+      <!-- Files will be rendered here dynamically -->
+    </ul>
+  </div>
+
+  <div class="editor">
+    <textarea id="codeArea" spellcheck="false">
+
+    </textarea>
+
+    <div class="output-section">
+      <div class="panel" id="outputPanel">
+        <h3>Output</h3>
+        <pre id="outputText" class="success">Ready to compile...</pre>
+      </div>
+      <div class="panel" id="aiPanel">
+        <h3>AI Recommendations</h3>
+        <pre id="aiText">Waiting for code execution...</pre>
+      </div>
+    </div>
+
+    <div class="console">
+      <div class="input-area">
+        <input type="text" id="userInput" placeholder="Enter your input (if required)...">
+        <button id="inputRun">Run</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  /*
+    Code Guardian - client-side editor script
+    Responsibilities:
+      - Manage an in-memory file explorer
+      - Create/Open/Save files (in-memory or via local file picker)
+      - Filter the explorer by selected language
+      - Provide language templates and show them in the right panel
+      - Simulate running/compiling code and log the user input when Run is clicked
+  */
+
+  // ----- UI elements -----
+  const runBtn = document.getElementById('runBtn');
+  const codeArea = document.getElementById('codeArea');
+  const outputText = document.getElementById('outputText');
+  const aiText = document.getElementById('aiText');
+  const languageSelect = document.getElementById('languageSelect');
+  const fileList = document.getElementById('fileList');
+  const newFileBtn = document.getElementById('newFileBtn');
+  const openFileBtn = document.getElementById('openFileBtn');
+  const saveFileBtn = document.getElementById('saveFileBtn');
+  const inputRunBtn = document.getElementById('inputRun');
+  const userInputField = document.getElementById('userInput');
+
+  // Hidden file input used for "Open File" (reads local files into memory)
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.style.display = 'none';
+  document.body.appendChild(fileInput);
+
+  // ----- In-memory file system and templates -----
+  // Initial example files and simple templates per language
+  const files = [
+    { name: 'main.py', content: '# main.py\nprint("Hello from Python")\n' },
+    { name: 'utils.cpp', content: '#include <iostream>\nusing namespace std;\nint main(){ cout << "Hello, C++"; return 0; }\n' },
+    { name: 'App.java', content: 'public class App { public static void main(String[] args){ System.out.println("Hello, Java"); } }\n' },
+    { name: 'script.js', content: 'console.log("Hello, World!");\n' },
+    { name: 'README.md', content: '# Project\nA simple project readme.\n' },
+    { name: 'hello.c', content: '#include <stdio.h>\nint main() {\n  printf("Hello, C!\\n");\n  return 0;\n}\n' }
+  ];
+
+  let currentFile = null; // currently opened file name (null if editing unsaved text)
+
+  const templates = {
+    python: '\n# Write your Python code here\n\nprint("Hello, World!")\n',
+    cpp: '// Welcome to C++\n\n#include <iostream>\nusing namespace std;\nint main() {\n  cout << "Hello, World!" << endl;\n  return 0;\n}\n',
+    java: '// Welcome to Java\n\npublic class Main {\n  public static void main(String[] args) {\n    System.out.println("Hello, World!");\n  }\n}\n',
+    javascript: '// Welcome to JavaScript\n\nconsole.log("Hello, World!");\n',
+    c: '// Welcome to C \n\n#include <stdio.h>\nint main() {\n  printf("Hello, World!\\n");\n  return 0;\n}\n'
+  };
+
+  const extMap = { python: '.py', cpp: '.cpp', java: '.java', javascript: '.js', c: '.c' };
+
+  // ----- Helper utilities -----
+  function getLangByFilename(name) {
+    const lower = name.toLowerCase();
+    if (lower.endsWith('.py')) return 'python';
+    if (lower.endsWith('.cpp') || lower.endsWith('.cc') || lower.endsWith('.cxx')) return 'cpp';
+    if (lower.endsWith('.java')) return 'java';
+    if (lower.endsWith('.js')) return 'javascript';
+    if (lower.endsWith('.c')) return 'c';
+    return null;
+  }
+
+  // Render the file explorer; optionally filter by language
+  function renderFileList(filterLang = null) {
+    fileList.innerHTML = '';
+    files.forEach(f => {
+      const lang = getLangByFilename(f.name);
+      if (filterLang && filterLang !== lang) return; // skip non-matching languages
+
+      const li = document.createElement('li');
+      li.textContent = f.name;
+      li.dataset.filename = f.name;
+      li.style.color = currentFile === f.name ? '#fff' : '#999';
+      li.addEventListener('click', () => openFileInEditor(f.name));
+      fileList.appendChild(li);
+    });
+  }
+
+  // Open a file from the in-memory files array into the editor
+  function openFileInEditor(filename) {
+    const f = files.find(x => x.name === filename);
+    if (!f) return;
+    currentFile = f.name;
+    codeArea.value = f.content;
+    const lang = getLangByFilename(f.name);
+    if (lang) languageSelect.value = lang;
+    // re-render to highlight selection and apply filter
+    renderFileList(languageSelect.value);
+  }
+
+  // Save edits back to the in-memory store for the current file
+  function saveCurrentFile() {
+    if (!currentFile) {
+      alert('No file is open. Use New File to create one or click a file in the explorer.');
+      return;
+    }
+    const f = files.find(x => x.name === currentFile);
+    if (f) {
+      f.content = codeArea.value;
+      outputText.textContent = '✅ Saved ' + currentFile;
+      outputText.classList.remove('error');
+      outputText.classList.add('success');
+    }
+    renderFileList(languageSelect.value);
+  }
+
+  // ----- Button handlers -----
+  newFileBtn.addEventListener('click', () => {
+    const lang = languageSelect.value;
+    const ext = extMap[lang] || '.txt';
+    let name = prompt('Enter new file name', 'untitled' + ext);
+    if (!name) return;
+    if (!name.includes('.')) name += ext;
+    if (files.some(f => f.name === name)) { alert('A file with this name already exists.'); return; }
+    const content = templates[lang] || '';
+    files.push({ name, content });
+    currentFile = name;
+    codeArea.value = content;
+    renderFileList(lang);
+  });
+
+  openFileBtn.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', (ev) => {
+    const file = ev.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const content = reader.result;
+      const existing = files.find(f => f.name === file.name);
+      if (existing) existing.content = content; else files.push({ name: file.name, content });
+      currentFile = file.name;
+      codeArea.value = content;
+      const lang = getLangByFilename(file.name);
+      if (lang) languageSelect.value = lang;
+      renderFileList(languageSelect.value);
+    };
+    reader.readAsText(file);
+    fileInput.value = '';
+  });
+
+  saveFileBtn.addEventListener('click', saveCurrentFile);
+
+  // When language changes: filter explorer and show template in right panel
+  languageSelect.addEventListener('change', () => {
+    const lang = languageSelect.value;
+    renderFileList(lang);
+    const currentText = codeArea.value.trim();
+    const template = templates[lang] || '';
+    // populate editor only if no file open or editor is empty
+    if (!currentFile || currentText === '') { codeArea.value = template; currentFile = null; }
+    // show welcome message + template in right panel for quick reference
+    aiText.textContent = 'Welcome to ' + lang.toUpperCase() + '!\n\nTemplate:\n\n' + template;
+  });
+
+  // Initial render and template on load
+  renderFileList();
+  (function showInitialTemplate(){ const lang = languageSelect.value; aiText.textContent = 'Welcome to ' + lang.toUpperCase() + '!\n\nTemplate:\n\n' + (templates[lang] || ''); })();
+
+  // Run: simulate analysis and log bottom input value to the console
+  runBtn.addEventListener('click', () => {
+    const code = codeArea.value;
+    const language = languageSelect.value;
+    const userInput = userInputField.value; // value from bottom input field
+
+    // Log the user input to the browser console as requested
+    console.log('User input (from input-area):', userInput);
+
+    // Also show the input in the Output panel for convenience
+    outputText.classList.remove('error', 'success');
+    aiText.textContent = 'Analyzing ' + language.toUpperCase() + ' code... 🤖';
+
+    setTimeout(() => {
+      if (language === 'python' && code.includes('pritn')) {
+        outputText.textContent = "Error: 'pritn' is not defined. Did you mean 'print'?"; outputText.classList.add('error'); aiText.textContent = "💡 Suggestion: Fix typo 'pritn' → 'print'";
+      } else if (language === 'cpp' && code.includes('cout <<')) {
+        outputText.textContent = 'Output: Hello, World!\n✅ C++ code compiled successfully.'; outputText.classList.add('success'); aiText.textContent = '✨ Suggestion: Use std::endl for cleaner output formatting.';
+      } else if (language === 'java' && code.includes('System.out.println')) {
+        outputText.textContent = 'Output: Hello, World!\n✅ Java compilation successful.'; outputText.classList.add('success'); aiText.textContent = '✅ No syntax issues detected.';
+      } else if (language === 'javascript' && code.includes('console.log')) {
+        outputText.textContent = 'Output: Hello, World!\n✅ JS executed successfully.'; outputText.classList.add('success'); aiText.textContent = '💡 Tip: You can use template literals for cleaner strings.';
+      } else {
+        outputText.textContent = '✅ Compilation completed successfully!'; outputText.classList.add('success'); aiText.textContent = 'AI Scan: No major issues found.';
+      }
+
+      // Append the user input into the output area for reference (non-destructive)
+      if (userInput && userInput.trim() !== '') {
+        outputText.textContent += '\n\n[Provided Input]: ' + userInput;
+      }
+    }, 700);
+  });
+
+  // Make the bottom input-area Run button behave the same as the top Run button
+  inputRunBtn.addEventListener('click', () => runBtn.click());
+</script>
+
+</body>
+</html>

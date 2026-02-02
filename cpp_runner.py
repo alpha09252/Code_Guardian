@@ -42,10 +42,7 @@ def run_cpp(code: str):
             "output": run_proc.stdout
         }
 def parse_gcc_error(stderr: str, language: str):
-    """
-    gcc / g++ error format:
-    path/to/file.c:LINE:COL: error: MESSAGE
-    """
+
 
     match = re.search(r":(\d+):\d+:\s+error:\s+(.*)", stderr)
 

@@ -6,7 +6,7 @@ from analyzers.cpp_runner import run_cpp
 from analyzers.java_runner import run_java
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
+app = FastAPI(your_API_Key)
 
 app.add_middleware(
     CORSMiddleware,

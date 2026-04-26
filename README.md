@@ -11,20 +11,16 @@
 ## Architecture
 User
  │
- ▼
-Web Interface (home.html)
+ Web Interface (home.html)
  │
- ▼
-Main Application (main.py)
+ Main Application (main.py)
  │
  ├── Python Analyzer
  │── Java Analyzer
  │── C Analyzer
  │── C++ Analyzer
  │
- ▼
-Code Execution / Analysis Engine
+ Code Execution / Analysis Engine
  │
- ▼
-Results & Feedback
+ Results & Feedback
 

@@ -85,4 +85,32 @@ This project uses basic execution handling. For production-grade systems, sandbo
 
 ai code-execution debugging compiler python backend nlp error-detection system-design
 
+---
 
+## Example
+
+Input Code:
+print("Hello"
+
+AI Output:
+Line 1: SyntaxError  
+Missing closing parenthesis ')'  
+Fix: Add ')' at the end of the print statement
+
+---
+
+##  Demo
+
+###  Code Input
+![Input](screenshots/input.png)
+
+###  AI Error Detection
+![AI Error](screenshots/ai-error.png)
+
+###  Output
+![Output](screenshots/output.png)
+
+### Interface
+![Run] (screenshots/output.png)
+
+---

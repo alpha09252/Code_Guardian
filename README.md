@@ -1,26 +1,88 @@
-# Code_Guardian
-**Code Guardian** is an online compiler and code editor that allows users to write, run, and test code in multiple programming languages directly from the browser. It provides a fast, secure, and user-friendly coding environment.
+# Code_Guardian "AI-Powered Online Compiler & Debugging Engine"
+
+An intelligent multi-language online compiler that not only executes code but also analyzes errors using AI to provide **line-level feedback and detailed explanations**.
+
+---
+
+## Problem Statement
+
+Traditional online compilers only display raw errors, which are often difficult for beginners to understand.
+
+This project solves that by integrating **AI-based error analysis**, helping users:
+
+* Identify the exact line where the error occurred
+* Understand the type of error
+* Get human-readable explanations
+
+---
 
 ## Features
 
-- Supports multiple programming languages (C, C++, Java, Python, etc.)
-- Real-time code execution
-- Clean and intuitive interface
-- No installation required — code runs in the browser
-- Secure environment to prevent malicious code execution
-## Architecture
-User
- │
- Web Interface (home.html)
- │
- Main Application (main.py)
- │
- ├── Python Analyzer
- │── Java Analyzer
- │── C Analyzer
- │── C++ Analyzer
- │
- Code Execution / Analysis Engine
- │
- Results & Feedback
+*  Multi-language support (Python, C, C++, Java)
+*  AI-powered error detection
+*  Line-by-line error identification
+*  Human-readable error explanations
+*  Fast code execution engine
+*  Beginner-friendly debugging support
+
+---
+
+##  Architecture
+
+User Code
+→ Execution Engine (Language Runner)
+→ Error Output
+→ AI Analyzer
+→ Structured Feedback (Line + Error Type + Explanation)
+
+---
+
+##  Tech Stack
+
+* Python (Core Backend)
+* Subprocess / Runtime Execution
+* Basic HTML Frontend
+* AI/NLP for error analysis
+
+---
+
+##  Project Structure
+
+main.py            → Main backend controller
+python_runner.py   → Python execution
+c_runner.py        → C execution
+cpp_runner.py      → C++ execution
+java_runner.py     → Java execution
+home.html          → User interface
+
+---
+
+##  Security Note
+
+This project uses basic execution handling. For production-grade systems, sandboxing (e.g., Docker) and resource limits are recommended.
+
+---
+
+##  Future Improvements
+
+* Docker-based sandboxing
+* Advanced AI debugging (suggest fixes)
+* Web-based IDE interface
+* API for external integration
+
+---
+
+##  Use Cases
+
+* Online coding platforms
+* AI-based learning tools
+* Beginner-friendly compilers
+* Coding education systems
+
+---
+
+##  Topics
+
+ai code-execution debugging compiler python backend nlp error-detection system-design
+
 

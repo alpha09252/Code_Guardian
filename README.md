@@ -104,13 +104,13 @@ Fix: Add ')' at the end of the print statement
 ###  Code Input
 ![Input](screenshots/input.png)
 
+###  Running Code
+![Run](screenshots/run.png)
+
 ###  AI Error Detection
 ![AI Error](screenshots/ai-error.png)
 
 ###  Output
 ![Output](screenshots/output.png)
-
-### Interface
-![Run] (screenshots/output.png)
 
 ---

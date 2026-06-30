@@ -15,7 +15,6 @@ This project solves that by integrating **AI-based error analysis**, helping use
 ---
 
 ## Features
-
 *  Multi-language support (Python, C, C++, Java)
 *  AI-powered error detection
 *  Line-by-line error identification
@@ -24,7 +23,6 @@ This project solves that by integrating **AI-based error analysis**, helping use
 *  Beginner-friendly debugging support
 
 ---
-
 ##  Architecture
 
 User Code
